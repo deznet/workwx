@@ -54,7 +54,7 @@ type GetTokenResp struct {
 }
 
 func (e *Error) Error() string {
-	return e.Msg
+	return fmt.Sprintf("ErrCode:%d，ErrMsg:%s", e.Code, e.Msg)
 }
 
 func (e *Error) GetCode() int {
@@ -91,7 +91,7 @@ func (c *WorkWx) WithApp(appID int64, appSecret string) *App {
 }
 
 // GetAccessToken 获取AccessToken
-func (c *App) GetAccessToken() (string, error) {
+func (c *App) GetAccessToken() (string, *Error) {
 	//根据accessToken的有效期判断
 	if c.accessToken.ExpiresAt.After(time.Now()) {
 		return c.accessToken.Token, nil
@@ -105,7 +105,7 @@ func (c *App) GetAccessToken() (string, error) {
 	return c.accessToken.Token, nil
 }
 
-func (c *App) GetAccessTokenFromServer() (*AccessToken, error) {
+func (c *App) GetAccessTokenFromServer() (*AccessToken, *Error) {
 	uri := fmt.Sprintf("/cgi-bin/gettoken?corpid=%s&corpsecret=%s", c.CorpID, c.AppSecret)
 	var result GetTokenResp
 	err := c.httpGet(uri, &result)
@@ -121,7 +121,7 @@ func (c *App) GetAccessTokenFromServer() (*AccessToken, error) {
 }
 
 // httpGet 企业微信请求接口get通用方法
-func (c *App) httpGet(uri string, resp ICommonResp) error {
+func (c *App) httpGet(uri string, resp ICommonResp) *Error {
 	httpClient := resty.New()
 	httpClient.BaseURL = "https://qyapi.weixin.qq.com"
 	request := httpClient.R()
@@ -129,7 +129,7 @@ func (c *App) httpGet(uri string, resp ICommonResp) error {
 	request.SetResult(&resp)
 	_, err := request.Get(uri)
 	if err != nil {
-		return err
+		return NewError(10000, err.Error())
 	}
 	if resp.IsOK() {
 		return nil
@@ -138,7 +138,7 @@ func (c *App) httpGet(uri string, resp ICommonResp) error {
 }
 
 // httpPost 企业微信请求接口post通用方法
-func (c *App) httpPost(uri string, body interface{}, resp ICommonResp) error {
+func (c *App) httpPost(uri string, body interface{}, resp ICommonResp) *Error {
 	httpClient := resty.New()
 	httpClient.BaseURL = "https://qyapi.weixin.qq.com"
 	request := httpClient.R()
@@ -147,7 +147,7 @@ func (c *App) httpPost(uri string, body interface{}, resp ICommonResp) error {
 	request.SetBody(body)
 	_, err := request.Post(uri)
 	if err != nil {
-		return err
+		return NewError(10000, err.Error())
 	}
 	if resp.IsOK() {
 		return nil
