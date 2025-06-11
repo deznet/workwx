@@ -40,56 +40,74 @@ type IdTrans struct {
 	EnableIdTrans int `json:"enable_id_trans,omitempty"`
 }
 
+type CommonText struct {
+	Text struct {
+		Content string `json:"content"`
+	} `json:"text"`
+}
+
 // TextMessage 文本消息
 type TextMessage struct {
 	CommonMessage
 	SafeMessage
 	IdTrans
-	Text struct {
-		Content string `json:"content"`
-	} `json:"text"`
+	CommonText
+}
+
+type CommonImage struct {
+	Image struct {
+		MediaId string `json:"media_id"`
+	} `json:"image"`
 }
 
 // ImageMessage 图片消息
 type ImageMessage struct {
 	CommonMessage
 	SafeMessage
-	Image struct {
+	CommonImage
+}
+
+type CommonVoice struct {
+	Voice struct {
 		MediaId string `json:"media_id"`
-	} `json:"image"`
+	} `json:"voice"`
 }
 
 // VoiceMessage 语音消息
 type VoiceMessage struct {
 	CommonMessage
-	Voice struct {
-		MediaId string `json:"media_id"`
-	} `json:"voice"`
+	CommonVoice
+}
+
+type CommonVideo struct {
+	Video struct {
+		MediaId     string `json:"media_id"`
+		Title       string `json:"title"`
+		Description string `json:"description"`
+	} `json:"video"`
 }
 
 // VideoMessage 视频消息
 type VideoMessage struct {
 	CommonMessage
 	SafeMessage
-	Video struct {
-		MediaId     string `json:"media_id"`
-		Description string `json:"description"`
-	} `json:"video"`
+	CommonVideo
+}
+
+type CommonFile struct {
+	File struct {
+		MediaId string `json:"media_id"`
+	} `json:"file"`
 }
 
 // FileMessage 文件消息
 type FileMessage struct {
 	CommonMessage
 	SafeMessage
-	File struct {
-		MediaId string `json:"media_id"`
-	} `json:"file"`
+	CommonFile
 }
 
-// TextCardMessage 文本卡片消息
-type TextCardMessage struct {
-	CommonMessage
-	IdTrans
+type CommonTextCard struct {
 	TextCard struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
@@ -98,10 +116,14 @@ type TextCardMessage struct {
 	} `json:"textcard"`
 }
 
-// NewsMessage 图文消息
-type NewsMessage struct {
+// TextCardMessage 文本卡片消息
+type TextCardMessage struct {
 	CommonMessage
 	IdTrans
+	CommonTextCard
+}
+
+type CommonNews struct {
 	News struct {
 		Articles []struct {
 			Title       string `json:"title"`
@@ -114,11 +136,14 @@ type NewsMessage struct {
 	} `json:"news"`
 }
 
-// MpNewsMessage 图文消息
-type MpNewsMessage struct {
+// NewsMessage 图文消息
+type NewsMessage struct {
 	CommonMessage
-	SafeMessage
 	IdTrans
+	CommonNews
+}
+
+type CommonMpNews struct {
 	MpNews struct {
 		Articles []struct {
 			Title            string `json:"title"`
@@ -131,16 +156,31 @@ type MpNewsMessage struct {
 	} `json:"mpnews"`
 }
 
-// MarkdownMessage markdown消息
-type MarkdownMessage struct {
+// MpNewsMessage 图文消息
+type MpNewsMessage struct {
 	CommonMessage
+	SafeMessage
+	IdTrans
+	CommonMpNews
+}
+
+type CommonMarkdown struct {
 	Markdown struct {
 		Content string `json:"content"`
 	} `json:"markdown"`
 }
 
+// MarkdownMessage markdown消息
+type MarkdownMessage struct {
+	CommonMessage
+	CommonMarkdown
+}
+
 // SendMessage 发送应用消息
 func (c *App) SendMessage(m Message) (*SendMessageResp, *Error) {
+	if !m.SendAble() {
+		return nil, NewError(10001, "invalid message type")
+	}
 	token, err := c.GetAccessToken()
 	if err != nil {
 		return nil, err
@@ -196,15 +236,17 @@ func NewVoiceMessage(agentId int64, mediaId string) VoiceMessage {
 	return m
 }
 
-func NewVideoMessage(agentId int64, mediaId, description string, safe uint8) VideoMessage {
+func NewVideoMessage(agentId int64, mediaId, description string, title string, safe uint8) VideoMessage {
 	m := VideoMessage{}
 	m.AgentId = agentId
 	m.MsgType = "video"
 	m.Video = struct {
 		MediaId     string `json:"media_id"`
+		Title       string `json:"title"`
 		Description string `json:"description"`
 	}{
 		MediaId:     mediaId,
+		Title:       title,
 		Description: description,
 	}
 	m.Safe = safe

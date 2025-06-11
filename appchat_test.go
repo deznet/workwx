@@ -1,83 +1,131 @@
 package workwx
 
 import (
-	_ "github.com/joho/godotenv/autoload"
 	"os"
 	"strconv"
 	"testing"
 )
 
-func TestApp_SendTextMessage(t *testing.T) {
+func TestApp_CreateAppChat(t *testing.T) {
 	corp := New(os.Getenv("COPP_ID"))
 	appId, _ := strconv.ParseInt(os.Getenv("APP_ID"), 10, 64)
 	app := corp.WithApp(appId, os.Getenv("APP_SECRET"))
-	m := NewTextMessage(appId, "这是一条测试消息", 0)
-	m.ToUser = os.Getenv("TEST_USERID")
-	resp, err := app.SendMessage(m)
+	req := new(CreateAppChatReq)
+	req.Name = "测试群组"
+	req.UserList = []string{os.Getenv("TEST_USERID"), os.Getenv("TEST_USERID_2")}
+	req.Owner = os.Getenv("TEST_USERID")
+	req.ChatId = "abcdef123456"
+	id, err := app.CreateAppChat(req)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(resp)
+	t.Log(id)
 }
 
-func TestApp_SendImageMessage(t *testing.T) {
+func TestApp_UpdateAppChat(t *testing.T) {
 	corp := New(os.Getenv("COPP_ID"))
 	appId, _ := strconv.ParseInt(os.Getenv("APP_ID"), 10, 64)
 	app := corp.WithApp(appId, os.Getenv("APP_SECRET"))
-	m := NewImageMessage(appId, "2Rwj-Nb0IpxSxkJxmgKkPWdc1t8H-mmf21V92w3FXMWYA54YdvMlcbV_D4wwaVxLg", 0)
-	m.ToUser = os.Getenv("TEST_USERID")
-	resp, err := app.SendMessage(m)
+	req := new(UpdateAppChatReq)
+	req.Name = "测试群组1"
+	req.AddUserList = []string{}
+	req.DelUserList = []string{"kd_494806"}
+	req.Owner = os.Getenv("TEST_USERID")
+	req.ChatId = "abcdef123456"
+	err := app.UpdateAppChat(req)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(resp)
+}
+
+func TestApp_GetAppChat(t *testing.T) {
+	corp := New(os.Getenv("COPP_ID"))
+	appId, _ := strconv.ParseInt(os.Getenv("APP_ID"), 10, 64)
+	app := corp.WithApp(appId, os.Getenv("APP_SECRET"))
+	info, err := app.GetAppChat("abcdef123456")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(info)
+}
+
+func TestApp_SendAppChatTextMessage(t *testing.T) {
+	corp := New(os.Getenv("COPP_ID"))
+	appId, _ := strconv.ParseInt(os.Getenv("APP_ID"), 10, 64)
+	app := corp.WithApp(appId, os.Getenv("APP_SECRET"))
+	m := AppChatTextMessage{}
+	m.ChatId = "abcdef123456"
+	m.MsgType = "text"
+	m.Text.Content = "这是一条测试消息"
+	err := app.SendAppChatMessage(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestApp_SendAppChatImageMessage(t *testing.T) {
+	corp := New(os.Getenv("COPP_ID"))
+	appId, _ := strconv.ParseInt(os.Getenv("APP_ID"), 10, 64)
+	app := corp.WithApp(appId, os.Getenv("APP_SECRET"))
+	m := AppChatImageMessage{}
+	m.Image.MediaId = "2Rwj-Nb0IpxSxkJxmgKkPWdc1t8H-mmf21V92w3FXMWYA54YdvMlcbV_D4wwaVxLg"
+	m.ChatId = "abcdef123456"
+	m.MsgType = "image"
+	err := app.SendAppChatMessage(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 }
 
 // 说明：发送到微信端语音有问题，企业微信端没问题
-func TestApp_SendVoiceMessage(t *testing.T) {
+func TestApp_SendAppChatVoiceMessage(t *testing.T) {
 	corp := New(os.Getenv("COPP_ID"))
 	appId, _ := strconv.ParseInt(os.Getenv("APP_ID"), 10, 64)
 	app := corp.WithApp(appId, os.Getenv("APP_SECRET"))
-	m := NewVoiceMessage(appId, "2cnEmOZzgSRcuadWzBrpm2bZqrqpWXa84yg7X42lasCiMVZf4H01XBi98-67KuCUV")
-	m.ToUser = os.Getenv("TEST_USERID")
-	resp, err := app.SendMessage(m)
+	m := AppChatVoiceMessage{}
+	m.ChatId = "abcdef123456"
+	m.MsgType = "voice"
+	m.Voice.MediaId = "2cnEmOZzgSRcuadWzBrpm2bZqrqpWXa84yg7X42lasCiMVZf4H01XBi98-67KuCUV"
+	err := app.SendAppChatMessage(m)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(resp)
 }
 
-func TestApp_SendVideoMessage(t *testing.T) {
+func TestApp_SendAppChatVideoMessage(t *testing.T) {
 	corp := New(os.Getenv("COPP_ID"))
 	appId, _ := strconv.ParseInt(os.Getenv("APP_ID"), 10, 64)
 	app := corp.WithApp(appId, os.Getenv("APP_SECRET"))
-	m := NewVideoMessage(appId, "2cnEmOZzgSRcuadWzBrpm2bZqrqpWXa84yg7X42lasCiMVZf4H01XBi98-67KuCUV", "", "", 0)
-	m.ToUser = os.Getenv("TEST_USERID")
-	resp, err := app.SendMessage(m)
+	m := AppChatVideoMessage{}
+	m.ChatId = "abcdef123456"
+	m.MsgType = "video"
+	m.Video.MediaId = "2cnEmOZzgSRcuadWzBrpm2bZqrqpWXa84yg7X42lasCiMVZf4H01XBi98-67KuCUV"
+	err := app.SendAppChatMessage(m)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(resp)
 }
 
-func TestApp_SendFileMessage(t *testing.T) {
+func TestApp_SendAppChatFileMessage(t *testing.T) {
 	corp := New(os.Getenv("COPP_ID"))
 	appId, _ := strconv.ParseInt(os.Getenv("APP_ID"), 10, 64)
 	app := corp.WithApp(appId, os.Getenv("APP_SECRET"))
-	m := NewFileMessage(appId, "2aFk9yf0h4OfbDJt4q24LweZDxSfHXMGffGHetbj4hy3BbbURNTG59XwjFe7mHnJ9", 0)
-	m.ToUser = os.Getenv("TEST_USERID")
-	resp, err := app.SendMessage(m)
+	m := AppChatFileMessage{}
+	m.ChatId = "abcdef123456"
+	m.MsgType = "file"
+	m.File.MediaId = "2aFk9yf0h4OfbDJt4q24LweZDxSfHXMGffGHetbj4hy3BbbURNTG59XwjFe7mHnJ9"
+	err := app.SendAppChatMessage(m)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(resp)
 }
 
-func TestApp_SendTextCardMessage(t *testing.T) {
+func TestApp_SendAppChatTextCardMessage(t *testing.T) {
 	corp := New(os.Getenv("COPP_ID"))
 	appId, _ := strconv.ParseInt(os.Getenv("APP_ID"), 10, 64)
 	app := corp.WithApp(appId, os.Getenv("APP_SECRET"))
-	m := TextCardMessage{}
+	m := AppChatTextCardMessage{}
 	m.TextCard = struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
@@ -89,21 +137,20 @@ func TestApp_SendTextCardMessage(t *testing.T) {
 		URL:         "https://www.qq.com",
 		BtnTxt:      "点击进入",
 	}
+	m.ChatId = "abcdef123456"
 	m.MsgType = "textcard"
-	m.AgentId = appId
-	m.ToUser = os.Getenv("TEST_USERID")
-	resp, err := app.SendMessage(m)
+	err := app.SendAppChatMessage(m)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(resp)
+
 }
 
-func TestApp_SendNewsMessage(t *testing.T) {
+func TestApp_SendAppChatNewsMessage(t *testing.T) {
 	corp := New(os.Getenv("COPP_ID"))
 	appId, _ := strconv.ParseInt(os.Getenv("APP_ID"), 10, 64)
 	app := corp.WithApp(appId, os.Getenv("APP_SECRET"))
-	m := NewsMessage{}
+	m := AppChatNewsMessage{}
 	m.News = struct {
 		Articles []struct {
 			Title       string `json:"title"`
@@ -142,20 +189,18 @@ func TestApp_SendNewsMessage(t *testing.T) {
 	}
 
 	m.MsgType = "news"
-	m.AgentId = appId
-	m.ToUser = os.Getenv("TEST_USERID")
-	resp, err := app.SendMessage(m)
+	m.ChatId = "abcdef123456"
+	err := app.SendAppChatMessage(m)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(resp)
 }
 
-func TestApp_SendMpNewsMessage(t *testing.T) {
+func TestApp_SendAppChatMpNewsMessage(t *testing.T) {
 	corp := New(os.Getenv("COPP_ID"))
 	appId, _ := strconv.ParseInt(os.Getenv("APP_ID"), 10, 64)
 	app := corp.WithApp(appId, os.Getenv("APP_SECRET"))
-	m := MpNewsMessage{}
+	m := AppChatMpNewsMessage{}
 	m.MpNews = struct {
 		Articles []struct {
 			Title            string `json:"title"`
@@ -185,25 +230,24 @@ func TestApp_SendMpNewsMessage(t *testing.T) {
 		},
 	}
 	m.MsgType = "mpnews"
-	m.AgentId = appId
-	m.ToUser = os.Getenv("TEST_USERID")
-	resp, err := app.SendMessage(m)
+	m.ChatId = "abcdef123456"
+	err := app.SendAppChatMessage(m)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(resp)
 }
 
-func TestApp_SendMarkdownMessage(t *testing.T) {
+func TestApp_SendAppChatMarkdownMessage(t *testing.T) {
 	corp := New(os.Getenv("COPP_ID"))
 	appId, _ := strconv.ParseInt(os.Getenv("APP_ID"), 10, 64)
 	app := corp.WithApp(appId, os.Getenv("APP_SECRET"))
 	content := "您的会议室已经预定，稍后会同步到`邮箱`  \n>**事项详情**  \n>事　项：<font color=\"info\">开会</font>  \n>组织者：@miglioguan  \n>参与者：@miglioguan、@kunliu、@jamdeezhou、@kanexiong、@kisonwang  \n>  \n>会议室：<font color=\"info\">广州TIT 1楼 301</font>  \n>日　期：<font color=\"warning\">2018年5月18日</font>  \n>时　间：<font color=\"comment\">上午9:00-11:00</font>  \n>  \n>请准时参加会议。  \n>  \n>如需修改会议信息，请点击：[修改会议信息](https://work.weixin.qq.com)"
-	m := NewMarkdownMessage(appId, content)
-	m.ToUser = os.Getenv("TEST_USERID")
-	resp, err := app.SendMessage(m)
+	m := AppChatMarkdownMessage{}
+	m.MsgType = "markdown"
+	m.ChatId = "abcdef123456"
+	m.Markdown.Content = content
+	err := app.SendAppChatMessage(m)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(resp)
 }
