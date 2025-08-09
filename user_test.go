@@ -28,7 +28,7 @@ func TestApp_CreateUser(t *testing.T) {
 	user.Department = []int{11090}
 	user.Mobile = os.Getenv("TEST_USER_MOBILE")
 	user.Enable = 1
-	user.Gender = 1
+	user.Gender = "1"
 	err := app.CreateUser(user)
 	if err != nil {
 		t.Fatal(err)
@@ -45,7 +45,7 @@ func TestApp_UpdateUser(t *testing.T) {
 	user.Department = []int{11090}
 	user.Mobile = os.Getenv("TEST_USER_MOBILE")
 	user.Enable = 1
-	user.Gender = 1
+	user.Gender = "1"
 	user.Email = os.Getenv("TEST_USER_EMAIL")
 	err := app.UpdateUser(user)
 	if err != nil {

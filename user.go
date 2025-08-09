@@ -11,7 +11,7 @@ type User struct {
 	Department          []int    `json:"department"`
 	Order               []int    `json:"order"`
 	Position            string   `json:"position"`
-	Gender              uint8    `json:"gender"`
+	Gender              string   `json:"gender"`
 	Email               string   `json:"email"`
 	BizMail             string   `json:"biz_mail"`
 	IsLeaderInDept      []int    `json:"is_leader_in_dept"`
