@@ -11,7 +11,7 @@ func TestApp_GetUser(t *testing.T) {
 	corp := New(os.Getenv("COPP_ID"))
 	appId, _ := strconv.ParseInt(os.Getenv("APP_ID"), 10, 64)
 	app := corp.WithApp(appId, os.Getenv("APP_SECRET"))
-	user, err := app.GetUser("campus_13551230")
+	user, err := app.GetUser(os.Getenv("TEST_USERID"))
 	if err != nil {
 		t.Fatal(err)
 	}

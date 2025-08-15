@@ -45,13 +45,28 @@ func TestApp_DeleteDepartment(t *testing.T) {
 	}
 }
 
+func TestApp_GetDepartmentList(t *testing.T) {
+	corp := New(os.Getenv("COPP_ID"))
+	appId, _ := strconv.ParseInt(os.Getenv("CONTACT_APP_ID"), 10, 64)
+	app := corp.WithApp(appId, os.Getenv("CONTACT_APP_SECRET"))
+	depts, err := app.GetDepartmentList(4000000)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	for _, v := range depts {
+		t.Log(v)
+	}
+}
+
 func TestApp_GetDepartment(t *testing.T) {
 	corp := New(os.Getenv("COPP_ID"))
 	appId, _ := strconv.ParseInt(os.Getenv("CONTACT_APP_ID"), 10, 64)
 	app := corp.WithApp(appId, os.Getenv("CONTACT_APP_SECRET"))
-	dept, err := app.GetDepartment(4000001)
+	dept, err := app.GetDepartment(4000000)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 	t.Log(dept)
 }

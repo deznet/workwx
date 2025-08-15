@@ -17,10 +17,10 @@ type CreateDepartmentResp struct {
 	Id uint32 `json:"id"`
 }
 
-// GetDepartmentResp 获取单个部门详情返回
-type GetDepartmentResp struct {
+// GetDepartmentListResp 获取子部门ID列表返回
+type GetDepartmentListResp struct {
 	CommonResp
-	Department *Department `json:"department"`
+	Departments []*Department `json:"department_id"`
 }
 
 // CreateDepartment 创建部门
@@ -68,18 +68,31 @@ func (c *App) DeleteDepartment(id uint32) *Error {
 	return nil
 }
 
-// GetDepartment 获取单个部门详情
-// 已不可调用
-func (c *App) GetDepartment(id uint32) (*Department, *Error) {
+// GetDepartmentList 获取子部门ID列表,只能返回id\parent_id\order
+func (c *App) GetDepartmentList(id uint32) ([]*Department, *Error) {
 	token, err := c.GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
-	uri := fmt.Sprintf("/cgi-bin/department/get?access_token=%s&id=%d", token, id)
-	var result GetDepartmentResp
+	uri := fmt.Sprintf("/cgi-bin/department/simplelist?access_token=%s&id=%d", token, id)
+	var result GetDepartmentListResp
 	err = c.httpGet(uri, &result)
 	if err != nil {
 		return nil, err
 	}
-	return result.Department, nil
+	return result.Departments, nil
+}
+
+// GetDepartment 获取部门信息，只能返回id\parent_id\order
+func (c *App) GetDepartment(id uint32) (*Department, *Error) {
+	list, err := c.GetDepartmentList(id)
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range list {
+		if v.Id == id {
+			return v, nil
+		}
+	}
+	return &Department{}, nil
 }
